@@ -1,5 +1,6 @@
 package com.example.socialapp.feature_socialApp.feature_homeFragment.data.repository
 
+import android.util.Log
 import com.example.socialapp.data.Post
 import com.example.socialapp.feature_socialApp.config.FireStoreCollections
 import com.example.socialapp.feature_socialApp.config.FireStoreFields
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+import java.lang.reflect.Field
 import javax.inject.Inject
 
 class HomeFeedRepositoryImpl @Inject constructor(
@@ -29,9 +31,23 @@ class HomeFeedRepositoryImpl @Inject constructor(
             .snapshots()
             .map { querySnapShot ->
                 querySnapShot.documents.map { document ->
-                    document.toObject(Post::class.java)!!.apply {
+
+                    Log.d("DEBUG", document.data.toString())
+
+                    val post = document.toObject(Post::class.java)!!.apply {
                         documentId = document.id
                     }
+
+//                    Log.d(
+//                        "FLOW_DEBUG",
+//                        "POST = isLiked=${post.liked}, likeCount=${post.likeCount}"
+//                    )
+                    post
+
+
+
+
+
 
                 }
             }
@@ -51,9 +67,31 @@ class HomeFeedRepositoryImpl @Inject constructor(
 
     // write
     override suspend fun likePost(post: Post) {
-        firestore.collection(FireStoreCollections.POSTS)
-            .document(post.documentId)
-            .update(FireStoreFields.LIKE_COUNT, FieldValue.increment(1)).await()
+        Log.d("LIKE_DEBUG", "Received post: isLiked=${post.liked}, likeCount=${post.likeCount}")
+        if (post.liked){
+            firestore.collection(FireStoreCollections.POSTS)
+                .document(post.documentId)
+                .update(
+                    mapOf(
+                        FireStoreFields.LIKE_COUNT to FieldValue.increment(-1),
+                        FireStoreFields.IS_LIKED to false
+                    )
+                ).await()
+
+
+        }else{
+            firestore.collection(FireStoreCollections.POSTS)
+                .document(post.documentId)
+                .update(
+                    mapOf(
+                        FireStoreFields.LIKE_COUNT to FieldValue.increment(1),
+                        FireStoreFields.IS_LIKED to true
+                    )
+                ).await()
+
+
+        }
+
     }
 
     override suspend fun deletePost(post: Post) {

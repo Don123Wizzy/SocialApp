@@ -1,5 +1,6 @@
 package com.example.socialapp.adapters
 
+
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialapp.R
 import com.example.socialapp.data.Post
 import com.example.socialapp.databinding.HomeFragmentFeedBinding
 import java.text.SimpleDateFormat
@@ -22,22 +24,22 @@ import java.util.Locale
 // still on 1, to extend the adapter class, the adapter class requires a parameter of the viewHolder class so as to tell the recycler view what type of viewHolder it(adapter class) will use
 
 
-class HomeFragmentAdapter (
+class HomeFragmentAdapter(
     //Any class or fragment implementing this adapter, would receive the callbacks that are based on user actions
     // a callback is a piece of code that you give to another another objet, when the objet detect something it alls the allbak
     // now the homeFragmentScreen gives the callbacks to HomeFragment
     // detect user action all on the specific user action callback
-    private val onLikeClick:(Post)->Unit,
+    private val onLikeClick: (Post) -> Unit,
 
-    private val onCommentClick:(Post)->Unit,
+    private val onCommentClick: (Post) -> Unit,
 
-    private val onShareClick:(Post)->Unit,
+    private val onShareClick: (Post) -> Unit,
 
-    private val onProfileClick:(Post)->Unit,
+    private val onProfileClick: (Post) -> Unit,
 
-    private val onMoreClick:(Post)->Unit,
+    private val onMoreClick: (Post, View) -> Unit,
 
-    private val onReadMoreClick:(Post)->Unit
+    private val onReadMoreClick: (Post) -> Unit
 ) :
     ListAdapter<Post, HomeFragmentAdapter.ReferenceToViewHolderViews>(diffCallback) {
 
@@ -66,13 +68,15 @@ class HomeFragmentAdapter (
             }
 
 
-            if (post.imagePostList.isNotEmpty()){
+            if (post.imagePostList.isNotEmpty()) {
                 Glide.with(binding.root)
-                    .load(post.imagePostList.first()).
-                    into(binding.ImContentDisplay)
+                    .load(post.imagePostList.first()).into(binding.ImContentDisplay)
             }
 
-            val formatter = SimpleDateFormat("dd MM yyyy, h: mm a", Locale.getDefault()) // This gives output has this 18 Jul 2026, 9:45 AM
+            val formatter = SimpleDateFormat(
+                "dd MM yyyy, h: mm a",
+                Locale.getDefault()
+            ) // This gives output has this 18 Jul 2026, 9:45 AM
             binding.tvTimeStamp.text = formatter.format(Date(post.timestamp))
             binding.follow.text =
                 if (post.isFollowing) "Following" else "Follow"
@@ -80,6 +84,7 @@ class HomeFragmentAdapter (
             binding.ibLikeButton.setOnClickListener {
                 onLikeClick(post)
             }
+            if (post.liked) binding.ibLikeButton.setImageResource(R.drawable.ic_thumb_up_filledblue) else binding.ibLikeButton.setImageResource(R.drawable.like_button)
 
             binding.ibCommentButton.setOnClickListener {
                 onCommentClick(post)
@@ -89,8 +94,8 @@ class HomeFragmentAdapter (
                 onShareClick(post)
             }
 
-            binding.ibMoreOptionsButton.setOnClickListener {
-                onMoreClick(post)
+            binding.ibThreeVerticalButton.setOnClickListener {
+                onMoreClick(post, binding.ibThreeVerticalButton)
             }
         }
     }
@@ -110,109 +115,11 @@ class HomeFragmentAdapter (
         position: Int
     ) {
 
-        val post = getItem(position) // Give me the Post stored at this position in the ListAdapter's current list
+        val post =
+            getItem(position) // Give me the Post stored at this position in the ListAdapter's current list
         holder.bind(post) // The content are then binded to the viewHolder view
-
-
-
-//        btnFollow.setOnClickListener {
-//
-//            var currentState = sharedPref.getBoolean("following_${post.userId}", false)
-//            currentState = !currentState
-//
-//            if (currentState) {
-//                holder.binding.follow.text = "Following"
-//
-//            } else {
-//                holder.binding.follow.text = "Follow"
-//            }
-//
-//            sharedPref.edit { putBoolean("following_${post.userId}", currentState) }
-//            initialFollowState = currentState
-
-//            val currentState = sharedPref.getBoolean("following", false)
-//            val newState = !currentState
-//            editor.putBoolean("following", newState).apply()
-//
-//            holder.binding.follow.text = if (newState) "following" else "follow"
-
-
-//            val postOwnerId = post.userId
-//            val nameOfUser = FirebaseAuth.getInstance().currentUser?.displayName
-//
-//            val iD = FirebaseAuth.getInstance().currentUser?.uid
-//            val addFollowingPost = Notification(
-//                following = "true",
-//                userThatFollowedId = iD,
-//                nameOfUser = nameOfUser,
-//                userBeingFollowedId = postOwnerId,
-//                timeStamp = System.currentTimeMillis()
-//
-//            )
-//            FirebaseFirestore.getInstance().collection("Notification").add(addFollowingPost)
-
-//            btnFollow.text = "Following"
-
     }
 
-
-
-        // Set text first
-//        tvContent.text = post.content
-//
-//        tvContent.maxLines = Int.MAX_VALUE
-//
-//        tvName.text = post.name
-//
-//        if (post.imagePostList.isNotEmpty()) {
-//            context?.let {
-//                Glide.with(it)
-//                    .load(post.imagePostList[0])
-//                    .into(imContentDisplay)
-//
-//            }
-//        } else {
-//            holder.binding.ImContentDisplay.visibility = View.GONE
-//        }
-
-//        val profileImage = UserSession.currentUser?.userProfileImage
-//        if (profileImage != null) {
-//            context?.let {
-//                Glide.with(it)
-//                    .load(profileImage)
-//                    .into(imUserProfilePicture)
-//            }
-//        } else {
-//            Log.d("userImage", "E no dey here o")
-//        }
-
-
-        // Reset the view states explicitly
-//        tvContent.maxLines = if (post.isExpanded) Int.MAX_VALUE else 3
-//        tvReadMore.text = if (post.isExpanded) "Read Less" else "Read More"
-//
-//
-//        // Check line count AFTER layout
-//        tvContent.post {
-//            Log.d("DEBUG", "Line count: ${holder.binding.tvContentContent.lineCount}")
-//            if (tvContent.lineCount >= 3) {
-//                tvReadMore.visibility = View.VISIBLE
-//            } else {
-//                tvReadMore.visibility = View.GONE
-//            }
-//        }
-
-        // Toggle on click
-//        tvReadMore.setOnClickListener {
-//            post.isExpanded = !post.isExpanded
-//            notifyItemChanged(position)  // Rebind to refresh the UI
-//        }
-
-
-//        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-//        val formattedDate = sdf.format(Date(post.timestamp))
-//        holder.binding.tvTimeStamp.text = formattedDate
-//    }
 
     companion object {
         val diffCallback = object : DiffUtil.ItemCallback<Post>() {
