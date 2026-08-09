@@ -1,6 +1,7 @@
 package com.example.socialapp.feature_socialApp.di
 
-import com.example.socialapp.feature_socialApp.feature_imageEditActivity.data.remote.CloudinaryApi
+import com.example.socialapp.feature_socialApp.data.remote.cloudinary.CloudinaryApi
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
