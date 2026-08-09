@@ -8,5 +8,8 @@ sealed class CompleteProfileEvents  {
     data object Continue  : CompleteProfileEvents()
     data class ProfileImageSelected(val uri : Uri) : CompleteProfileEvents()
     data object NavigateToMain : CompleteProfileEvents()
+    data class CloudinaryUploadFailedMessageToast(val message : String) : CompleteProfileEvents()
+    data class FireStoreUpdateFailedMessageToast (val message : String) : CompleteProfileEvents()
+    data class UserNotLoggedInMessageToast ( val message : String) : CompleteProfileEvents()
 
 }
