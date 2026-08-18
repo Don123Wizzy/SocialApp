@@ -1,8 +1,12 @@
 package com.example.socialapp.feature_socialApp.feature_profileFragment.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialapp.feature_socialApp.feature_profileFragment.domain.model.UserDetailError
+import com.example.socialapp.feature_socialApp.feature_profileFragment.domain.model.UserDetailException
 import com.example.socialapp.feature_socialApp.feature_profileFragment.domain.use_case.GetUserProfilePicAndUserNameUseCase
+import com.example.socialapp.feature_socialApp.feature_profileFragment.domain.use_case.SignOutUseCase
 import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -15,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileFragmentViewModel @Inject constructor(
-    val getUserProfilePicAndUserNameUseCase: GetUserProfilePicAndUserNameUseCase
+    private val getUserProfilePicAndUserNameUseCase: GetUserProfilePicAndUserNameUseCase,
+    private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
     init {
         getUserProfilePicAndUserName()
@@ -57,6 +62,7 @@ class ProfileFragmentViewModel @Inject constructor(
             }
 
             is ProfileFragmentEvents.Logout -> {
+                signOutUseCase()
                 sendOneTimeEvents(ProfileFragmentEvents.Logout)
             }
             else -> {}
@@ -66,25 +72,31 @@ class ProfileFragmentViewModel @Inject constructor(
 
     private fun getUserProfilePicAndUserName (){
         viewModelScope.launch {
-            val result = getUserProfilePicAndUserNameUseCase()
-            result.fold(
-                onSuccess = { profileImageAndUserNameModel ->
-                    val profilePicture = profileImageAndUserNameModel.profileImage
-                    val userName = profileImageAndUserNameModel.userName
+            try {
+                val result = getUserProfilePicAndUserNameUseCase()
+                result.collect { collectedUserDocument ->
                     _uiState.value = _uiState.value.copy(
-                        userProfilePicture = profilePicture,
-                        userName = userName
+                        userProfilePicture = collectedUserDocument.userProfileImage
                     )
-
-                },
-                onFailure = { error ->
-                    val errorMessage = when(error){
-                        is FirebaseFirestoreException -> {"Poor internet connection, please try again"}
-                        else -> {"Could not load profile, please try again"}
-                    }
-                    sendOneTimeEvents(ProfileFragmentEvents.ErrorMessage(errorMessage))
+                    _uiState.value = _uiState.value.copy(
+                        userName = collectedUserDocument.name
+                    )
                 }
-            )
+            }catch (e : Exception){
+                when (e){
+                    is UserDetailException -> // checking whether the exception is my application error
+                        when (e.error){  // if it is, which one of the children errors in the sealed interface it is??
+                            is UserDetailError.FetchUserDetailsFailed -> {
+                                sendOneTimeEvents(ProfileFragmentEvents.FetchProfileFailedError("We couldn't load your profile. Please check your internet connection"))
+                            }
+                            is UserDetailError.UserNotLoggedIn -> {
+                                sendOneTimeEvents(ProfileFragmentEvents.UserNotLoggedInError("You’re not signed in. Please sign in and try again."))
+                            }
+                        }
+                }
+
+            }
+
 
         }
     }

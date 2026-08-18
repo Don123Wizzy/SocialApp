@@ -2,5 +2,5 @@ package com.example.socialapp.feature_socialApp.feature_profileFragment.presenta
 
 data class ProfileFragmentState(
     val userProfilePicture : String? = null,
-    val userName : String = ""
+    val userName : String? = null
 )

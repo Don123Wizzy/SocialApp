@@ -1,7 +1,9 @@
 package com.example.socialapp.feature_socialApp.feature_profileFragment.domain.repository
 
-import com.example.socialapp.feature_socialApp.feature_profileFragment.domain.model.ProfileImageAndUserNameModel
+import com.example.socialapp.data.Users
+import kotlinx.coroutines.flow.Flow
 
 interface UserDetailRepository {
-    suspend fun getUserProfilePicAndUserName() : Result<ProfileImageAndUserNameModel>
+    suspend fun getUserProfilePicAndUserName() : Flow<Users>
+    fun logOut ()
 }
